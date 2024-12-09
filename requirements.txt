@@ -8,6 +8,8 @@ numpy==2.1.2
     # via pandas
 pandas==2.2.3
     # via -r requirements.in
+patool==3.1.0
+    # via -r requirements.in
 pypdf2==3.0.1
     # via -r requirements.in
 python-dateutil==2.9.0.post0
