@@ -1,6 +1,7 @@
 """Module providing a function finding currupted rar."""
 
 import os
+import re
 import argparse
 from glob import glob
 import patoolib
@@ -10,7 +11,7 @@ import pandas as pd
 def check_file(fullfile):
     """Function check rar file."""
     try:
-        if patoolib.test_archive(fullfile, verbosity=-1) is not None:
+        if patoolib.test_archive(fullfile, verbosity=1) is not None:
             return False
         return True
     except FileNotFoundError as e:
@@ -34,12 +35,18 @@ def search_files(dirpath: str, is_recursive: bool) -> pd.DataFrame:
     if os.access(dirpath, os.R_OK):
         for fullfile in glob(dirpath + "/**/*.rar", recursive=is_recursive):
             filename = os.path.basename(fullfile)
-            if not check_file(fullfile):
-                print("ERROR " + fullfile)
-                files.append((filename, fullfile, "corrupted"))
-            # else:
-            #     print("OK " + fullfile + "\n")
-            #     files.append((filename, fullfile, 'good'))
+
+            # Match "*.part{2 to 999999999999999}.rar"
+            match = re.search(r"^.*\.part([2-9]|[1-9]\d{1,14})\.rar$", filename)
+
+            # Ignore split part
+            if match is None:
+                if not check_file(fullfile):
+                    print("ERROR " + fullfile)
+                    files.append((filename, fullfile, "corrupted"))
+                # else:
+                #     print("OK " + fullfile + "\n")
+                #     files.append((filename, fullfile, 'good'))
     else:
         print("Path is not valid")
 
